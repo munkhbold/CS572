@@ -1,0 +1,39 @@
+<%- include('../includes/head.ejs') %>
+</head>
+
+<body>
+    <%- include('../includes/navigation.ejs') %>
+    <main>
+        <% if(orders != null || orders.length != 0 ) {%>
+            <% for(let order of orders){ %>
+                <strong>Order date: <%= order.createdAt %></strong>
+            <table class="table">
+                <thead>
+                  <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Title</th>
+                    <th scope="col">Price</th>
+                    <th scope="col">Quantity</th>
+                    <th scope="col"></th>
+                  </tr>
+                </thead>
+                
+                <tbody>
+                    <% for(let j=0; j<order.items.length; j++){
+                        let item = order.items[j];
+                    %>
+                    <tr>
+                        <th scope="row"><%= j+1 %></th>
+                        <td><%= item.title %></td>
+                        <td><%= item.price %></td>
+                        <td><%= item.quantity %></td>
+                    </tr>
+                    <% }%>
+                </tbody>
+              </table>
+              <% }%>
+        <% } else { %>
+        <h1>Nothing there!</h1>
+        <%}%>
+    </main>
+    <%- include('../includes/end.ejs') %>
