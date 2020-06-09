@@ -2,7 +2,7 @@ const path = require('path');
 const express = require('express');
 const bodyParser = require('body-parser');
 const errorController = require('./controllers/error');
-const mongoConnect = require('./util/database').mongoConnect;
+const mongoose = require('mongoose');
 const User = require('./models/user');
 const app = express();
 
@@ -12,15 +12,16 @@ app.set('views', 'views');
 
 const adminRoutes = require('./routes/admin');
 const shopRoutes = require('./routes/shop');
+const userRoutes = require('./routes/user');
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, 'public')));
 
 // auth user middleware
 app.use((req, res, next) => {
-  User.findById('5ecf20fa24134324135d5552')
+  User.findById('5ed46c3b55b706240c5a97e8')
     .then(user => {
-      req.user = new User(user.name, user.email, user.cart, user._id);
+      req.user = user;
       next();
     })
   .catch(err => console.log(err));
@@ -28,11 +29,17 @@ app.use((req, res, next) => {
 
 app.use('/admin', adminRoutes);
 app.use(shopRoutes);
+app.use(userRoutes);
 
 app.use(errorController.get404);
 
-mongoConnect(()=>{
-  app.listen(3000);
-})
+mongoose.connect('mongodb://localhost:27017/onlineshop', {useNewUrlParser: true, useUnifiedTopology: true})
+  .then(()=>{
+    app.listen(3000, ()=>{
+      console.log("Server is running on 3000 ...");
+    });
+  })
+  .catch(err=>console.log(err));
+
 
 

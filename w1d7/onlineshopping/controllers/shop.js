@@ -2,15 +2,19 @@ const Product = require('../models/product');
 const Cart = require('../models/cart');
 
 exports.getIndex = (req, res, next) => {
-    res.render('shop/product-list', {
-        prods: Product.fetchAll(),
-        pageTitle: 'Shop',
-        path: '/',
-    });
+    console.log(req.user);
+    Product.find().then((products)=>{
+        res.render('shop/product-list', {
+            prods: products,
+            pageTitle: 'Shop',
+            path: '/',
+        });
+    }).catch((err)=>console.log(err));
+    
 };
 
-exports.getProducts = (req, res, next) => {
-    Product.fetchAll().then(products =>{
+exports.getAllProducts = (req, res, next) => {
+    Product.find().then(products =>{
         res.render('shop/product-list', {
             prods: products,
             pageTitle: 'Shop',
@@ -20,7 +24,7 @@ exports.getProducts = (req, res, next) => {
     
 };
 
-exports.getProduct = (req, res, next) => {
+exports.getProductDetail = (req, res, next) => {
     const prodId = req.params.prodId;
     Product.findById(prodId).then(product=>{
         console.log(product);
@@ -34,30 +38,30 @@ exports.getProduct = (req, res, next) => {
 
 exports.getCart = (req, res, next) => {
     req.user
-        .getCart()
-        .then(products => {
+        .populate('cart.items.productId')
+        .execPopulate('')
+        .then(user => {
             res.render('shop/cart', {
                 path: '/cart',
                 pageTitle: 'Your Cart',
-                products: products
+                cart: user.cart
             });
         })
         .catch(err => console.log(err));
 };
 
 exports.addToCart = (req, res, next) => {
-    Product.findById(req.body.prodId).then(product=>{
-        // Cart.save(product);
-        req.user.addToCart(product);
-        res.redirect('/cart');
-    });
+    req.user.addToCart(req.body.prodId)
+            .then(()=>{
+                res.redirect('/');
+            });
     
 }
 
 exports.deleteFromCart = (req, res, next) => {
     const prodId = req.body.prodId;
     req.user
-        .deleteItemFromCart(prodId)
+        .removeFromCart(prodId)
         .then(result => {
             res.redirect('/cart');
         })
